@@ -6,20 +6,26 @@
 
 ## prepare your environment
 - create a new terraform service account
-- add the following permissions (needs cleanup): 
-    - App Engine Admin
+- add the following permissions: 
     - App Engine Creator
     - Cloud Functions Admin
     - Cloud Scheduler Admin
     - Cloud SQL Admin
-    - Service Account Admin
-    - Create Service Accounts
-    - Service Account User
     - Pub/Sub Admin
     - Project IAM Admin
     - Storage Admin
+    - Service Account User
+    - Secret Manager
 - create and download a key for the created service account (.json key file)
-- copy the key to the project root folder
+- copy the key to the project root folder and rename it to "google_cloud_key_develop.json"
+- enable the following APIs (https://console.cloud.google.com/apis/library):
+    - Cloud Pub/Sub API
+    - Cloud Scheduler API
+    - Cloud Functions API
+    - Cloud SQL Admin API
+    - App Engine Admin API
+    - Cloud Build API
+    - Secret Manager API
 
 ## run terraform 
-- terraform apply -var google_key_file=<your key json file>  -var project_id=<your project id>
+- terraform apply -var project_id=[your project id] -var-file=environments/develop/variables.tfvars

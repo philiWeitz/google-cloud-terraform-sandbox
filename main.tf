@@ -4,16 +4,58 @@ provider "google" {
  region      = var.region
 }
 
-# create SQL server
-# resource "google_sql_database_instance" "master" {
-#  name             = "master-instance"
-#  database_version = "POSTGRES_12"
-#  region           = var.region
+# generate a random DB password
+resource "random_password" "db" {
+  length = 24
+  special = true
+  override_special = "_%@"
+}
 
-#  settings {
-#    tier = "db-f1-micro"
-#  }
-# }
+# create a secret entry
+resource "google_secret_manager_secret" "db_secret_password" {
+  secret_id = "db_password"
+
+  replication {
+    automatic = true
+  }
+}
+
+resource "google_secret_manager_secret_version" "db_secret_password_version" {
+  secret = google_secret_manager_secret.db_secret_password.id
+  secret_data = random_password.db.result
+}
+
+resource "google_secret_manager_secret" "db_secret_user" {
+  secret_id = "db_user"
+
+  replication {
+    automatic = true
+  }
+}
+
+resource "google_secret_manager_secret_version" "db_secret_user_version" {
+  secret = google_secret_manager_secret.db_secret_user.id
+  secret_data = "postgres"
+}
+
+
+# create SQL server
+resource "google_sql_database_instance" "master" {
+ name             = "master-instance"
+ database_version = "POSTGRES_12"
+ region           = var.region
+
+ settings {
+   tier = "db-f1-micro"
+ }
+}
+
+# create postgres user
+resource "google_sql_user" "postgres_user" {
+  instance = google_sql_database_instance.master.name
+  name     = google_secret_manager_secret_version.db_secret_user_version.secret_data
+  password = google_secret_manager_secret_version.db_secret_password_version.secret_data
+}
 
 # create a bucket
 resource "google_storage_bucket" "file_storage" {
@@ -96,10 +138,10 @@ resource "google_cloudfunctions_function_iam_member" "bucket-invoker" {
 }
 
 # create an app engine instance to run a cron job on
-resource "google_app_engine_application" "hello_world_scheduler_app" {
- project     = var.project_id
- location_id = var.region_app_engine
-}
+# resource "google_app_engine_application" "hello_world_scheduler_app" {
+#   project     = var.project_id
+#   location_id = var.region_app_engine
+# }
 
 # create a scheduler which invokes the cloud function ever x minutes
 resource "google_cloud_scheduler_job" "job" {
