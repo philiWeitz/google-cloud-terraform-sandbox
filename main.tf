@@ -1,19 +1,19 @@
 provider "google" {
- credentials = file("infrastructure-sandbox-289010-e6d58cce5b23.json")
+ credentials = file(var.google_key_file)
  project     = var.project_id
  region      = var.region
 }
 
 # create SQL server
-resource "google_sql_database_instance" "master" {
- name             = "master-instance"
- database_version = "POSTGRES_12"
- region           = var.region
+# resource "google_sql_database_instance" "master" {
+#  name             = "master-instance"
+#  database_version = "POSTGRES_12"
+#  region           = var.region
 
- settings {
-   tier = "db-f1-micro"
- }
-}
+#  settings {
+#    tier = "db-f1-micro"
+#  }
+# }
 
 # create a bucket
 resource "google_storage_bucket" "file_storage" {

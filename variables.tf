@@ -10,10 +10,13 @@ variable "region_app_engine" {
 
 variable "project_id" {
     type = string
-    default = "infrastructure-sandbox-289010"
 }
 
 variable "cron_schedule_every_ten_minutes" {
     type = string
     default = "*/10 * * * *"
+}
+
+variable "google_key_file" {
+    type = string
 }
