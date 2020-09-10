@@ -46,8 +46,16 @@ resource "google_sql_database_instance" "master" {
  region           = var.region
 
  settings {
-   tier = "db-f1-micro"
- }
+    tier = "db-f1-micro"
+
+    ip_configuration {
+      authorized_networks {
+        # should be removed for production
+        name  = "Allow all"
+        value = "0.0.0.0/0"
+      }
+    }
+  }
 }
 
 # create postgres user
@@ -55,6 +63,24 @@ resource "google_sql_user" "postgres_user" {
   instance = google_sql_database_instance.master.name
   name     = google_secret_manager_secret_version.db_secret_user_version.secret_data
   password = google_secret_manager_secret_version.db_secret_password_version.secret_data
+}
+
+# create a database
+provider "postgresql" {
+  host            = google_sql_database_instance.master.first_ip_address
+  port            = 5432
+  username        = google_secret_manager_secret_version.db_secret_user_version.secret_data
+  password        = google_secret_manager_secret_version.db_secret_password_version.secret_data
+  connect_timeout = 15
+}
+
+resource "postgresql_database" "my_db" {
+  name              = "my_db"
+  owner             = google_secret_manager_secret_version.db_secret_user_version.secret_data
+  template          = "template0"
+  lc_collate        = "en_US.UTF8"
+  connection_limit  = -1
+  allow_connections = true
 }
 
 # create a bucket
