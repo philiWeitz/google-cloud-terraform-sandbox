@@ -20,3 +20,7 @@ variable "cron_schedule_every_ten_minutes" {
 variable "google_key_file" {
     type = string
 }
+
+variable "sql_db_instance_type" {
+    type = string
+}

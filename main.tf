@@ -46,7 +46,7 @@ resource "google_sql_database_instance" "master" {
  region           = var.region
 
  settings {
-    tier = "db-f1-micro"
+    tier = var.sql_db_instance_type
 
     ip_configuration {
       authorized_networks {
